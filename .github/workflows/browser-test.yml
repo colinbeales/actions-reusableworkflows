@@ -1,0 +1,53 @@
+name: Browser Tests (Cypress)
+
+on: 
+  workflow_call:
+    inputs:
+      browser:
+        type: string
+        description: Browser, either firefox or chrome
+        required: true
+
+jobs:
+  test:
+    name: Test
+
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/browsers:latest
+      options: --user 1001
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        id: setup_node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Browser Tests
+        uses: cypress-io/github-action@v4.2.0
+        timeout-minutes: 3
+        with:
+          build: npm run build
+          start: npm start
+          # Disable the installation of the packages as we have already done this
+          install: false
+          browser: ${{ inputs.browser }}
+
+      - name: Save Cypress screenshots and recordings
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-${{ inputs.browser }}
+          # It is possible that cypress did not generate anything depending upon the tests
+          if-no-files-found: ignore
+          path: |
+            cypress/videos/**
+            cypress/screenshots/**
+          retention-days: 2

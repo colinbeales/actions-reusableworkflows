@@ -1,0 +1,54 @@
+on:
+  workflow_call:
+    inputs:
+      runnerOs:
+        description: 'The runner OS'
+        type: 'string'
+        default: ubuntu-latest
+      dockerfileLocation:
+        type: 'string'
+        default: '.'
+      acrName:
+        type: 'string'
+        default: 'changelogactionsregistry'
+      tagName:
+        type: 'string'
+        default: 'changelog-actions-app'
+      
+
+jobs:
+  #
+  # Container Build and Publish to Azure Container Registry
+  #
+  container-build-and-publish:
+    name: Container Build and Publish
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    runs-on: ${{ inputs.runnerOs }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          client-id: 9def3112-3a25-4954-9f8b-56b3696c189a
+          tenant-id: 604a65ec-0c50-4161-9328-0b85ec846472
+          subscription-id: ba72df5a-84a2-42c6-b7cd-2396546bc00d
+          
+          
+      - name: Build and Push Container to a ACR
+        run: |
+          az acr login --name ${{ inputs.acrName }}
+          docker build . -t ${{ inputs.tagName }}
+          docker tag ${{ inputs.tagName }} ${{ inputs.acrName }}.azurecr.io/${{ inputs.tagName }}:${{ github.sha }}
+          docker push ${{ inputs.acrName }}.azurecr.io/${{ inputs.tagName }}:${{ github.sha }}
+          
+      
+      
+
+      

@@ -1,0 +1,35 @@
+on:
+  workflow_call:
+    inputs:
+      runnerOs:
+        description: 'The runner OS'
+        type: 'string'
+        default: ubuntu-latest
+      nodeVersion:
+        type: 'string'
+        default: '16'
+
+jobs:
+  #
+  # Linting workflow to catch issues early and fail if conventions are not met
+  #
+  lint:
+    name: Lint
+
+    runs-on: ${{ inputs.runnerOs }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.nodeVersion }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
