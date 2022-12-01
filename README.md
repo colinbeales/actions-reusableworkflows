@@ -1,6 +1,6 @@
 # actions-reusableworkflows
 
-Small repo with some reusable actions in use. These are the called reusable actions.
+Small repo with some reusable workflows in GitHub Actions in use. In this repo are the called reusable workflows.
 
 Shows how reusables can also
 - Nest (i.e. call a reusable from a reusable)
